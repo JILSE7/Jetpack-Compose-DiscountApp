@@ -34,10 +34,13 @@ import com.example.discountapp.components.TwoCards
 import com.example.discountapp.utils.getDiscount
 import com.example.discountapp.utils.getPrice
 import com.example.discountapp.viewModel.CalculateViewModel1
+import com.example.discountapp.viewModel.CalculateViewModel2
+import com.example.discountapp.viewModel.CalculateViewModel3
+import com.example.discountapp.viewModel.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun  HomeView(viewModel1: CalculateViewModel1) {
+fun  HomeView3(viewModel3: CalculateViewModel3) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -48,82 +51,69 @@ fun  HomeView(viewModel1: CalculateViewModel1) {
             )
         }
     ) {
-        Container(it, viewModel1)
+        Container3(it, viewModel3)
     }
 }
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Container(paddingValues: PaddingValues, viewModel1: CalculateViewModel1){
+fun Container3 (paddingValues: PaddingValues, viewModel3: CalculateViewModel3){
+    val state = viewModel3.state
     Column(
         modifier = Modifier
             .padding(paddingValues)
             .padding(10.dp)
             .fillMaxSize(),
-       /* verticalArrangement = Arrangement.Center,*/
+        /* verticalArrangement = Arrangement.Center,*/
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var price by remember {
-            mutableDoubleStateOf(0.0)
-        }
 
-        var discount by remember {
-            mutableDoubleStateOf(0.0)
-        }
 
-        var priceWDiscount by remember {
-            mutableDoubleStateOf(0.0)
-        }
-
-        var total by remember {
-            mutableDoubleStateOf(0.0)
-        }
-
-        var showAlert by remember {
-            mutableStateOf(false)
-        }
-        
         TwoCards(
             title1 = "Total",
             title2 = "Discount",
-            number1 = total,
-            number2 = priceWDiscount
+            number1 = state.total,
+            number2 = state.priceWDiscount
         )
 
-        MainTextField(label = "Price", value = price, onValueChange = {price = it.toDouble()})
+        MainTextField(label = "Price", value = state.price, onValueChange = {viewModel3.handleChange(FieldType.PRICE, it.toDouble())})
 
         SpaceHeight(8.dp)
 
-        MainTextField(label = "Discount", value = discount, onValueChange = {discount = it.toDouble()})
+        MainTextField(label = "Discount", value = state.discount, onValueChange = {viewModel3.handleChange(FieldType.DISCOUNT, it.toDouble())})
 
         SpaceHeight(24.dp)
 
         MainButton(text = "Generate Discount") {
-           var result = viewModel1.calculate(price, discount)
+            if (viewModel3.state.price == 0.0 || viewModel3.state.discount == 0.0) {
+                viewModel3.handleAlert(true)
+            }
+
+            viewModel3.startCalculate()
+
+            /*viewModel2._price1 = 0*/
+            /*
 
             showAlert = result.second.second
 
             if (!showAlert) {
                 priceWDiscount = result.first
                 total = result.second.first
-            }
+                }*/
         }
         SpaceWidth(24.dp)
 
         MainButton(text = "Clear", color = Color.Red) {
-            price = 0.0
-            discount = 0.0
-            total = 0.0
-            priceWDiscount = 0.0
+
         }
-        
-        if (showAlert) {
+
+        if (state.showAlert) {
             Alert(
                 title = "Alert",
                 message = "Price and discount should not be zero",
                 confirmText = "Confirm",
-                onConfirm = { showAlert = false }){}
+                onConfirm = {viewModel3.handleAlert(false) }){}
         }
 
     }

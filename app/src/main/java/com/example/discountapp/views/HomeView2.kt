@@ -1,5 +1,4 @@
 package com.example.discountapp.views
-
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -34,10 +33,12 @@ import com.example.discountapp.components.TwoCards
 import com.example.discountapp.utils.getDiscount
 import com.example.discountapp.utils.getPrice
 import com.example.discountapp.viewModel.CalculateViewModel1
+import com.example.discountapp.viewModel.CalculateViewModel2
+import com.example.discountapp.viewModel.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun  HomeView(viewModel1: CalculateViewModel1) {
+fun  HomeView2(viewModel2: CalculateViewModel2) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -48,82 +49,66 @@ fun  HomeView(viewModel1: CalculateViewModel1) {
             )
         }
     ) {
-        Container(it, viewModel1)
+        Container2(it, viewModel2)
     }
 }
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Container(paddingValues: PaddingValues, viewModel1: CalculateViewModel1){
+fun Container2 (paddingValues: PaddingValues, viewModel2: CalculateViewModel2){
     Column(
         modifier = Modifier
             .padding(paddingValues)
             .padding(10.dp)
             .fillMaxSize(),
-       /* verticalArrangement = Arrangement.Center,*/
+        /* verticalArrangement = Arrangement.Center,*/
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var price by remember {
-            mutableDoubleStateOf(0.0)
-        }
 
-        var discount by remember {
-            mutableDoubleStateOf(0.0)
-        }
 
-        var priceWDiscount by remember {
-            mutableDoubleStateOf(0.0)
-        }
-
-        var total by remember {
-            mutableDoubleStateOf(0.0)
-        }
-
-        var showAlert by remember {
-            mutableStateOf(false)
-        }
-        
         TwoCards(
             title1 = "Total",
             title2 = "Discount",
-            number1 = total,
-            number2 = priceWDiscount
+            number1 = viewModel2.total,
+            number2 = viewModel2.priceWDiscount
         )
 
-        MainTextField(label = "Price", value = price, onValueChange = {price = it.toDouble()})
+        MainTextField(label = "Price", value = viewModel2.price, onValueChange = {viewModel2.handleChange(FieldType.PRICE, it.toDouble())})
 
         SpaceHeight(8.dp)
 
-        MainTextField(label = "Discount", value = discount, onValueChange = {discount = it.toDouble()})
+        MainTextField(label = "Discount", value = viewModel2.discount, onValueChange = {viewModel2.handleChange(FieldType.DISCOUNT, it.toDouble())})
 
         SpaceHeight(24.dp)
 
         MainButton(text = "Generate Discount") {
-           var result = viewModel1.calculate(price, discount)
+            if (viewModel2.price == 0.0 || viewModel2.discount == 0.0) {
+                viewModel2.handleAlert(true)
+            }
+            viewModel2.startCalculate()
+            /*viewModel2._price1 = 0*/
+            /*var result = viewModel2.calculate(price, discount)
 
             showAlert = result.second.second
 
             if (!showAlert) {
                 priceWDiscount = result.first
                 total = result.second.first
+                }*/
             }
-        }
         SpaceWidth(24.dp)
 
         MainButton(text = "Clear", color = Color.Red) {
-            price = 0.0
-            discount = 0.0
-            total = 0.0
-            priceWDiscount = 0.0
+              viewModel2.handleReset()
         }
-        
-        if (showAlert) {
+
+        if (viewModel2.showAlert) {
             Alert(
                 title = "Alert",
                 message = "Price and discount should not be zero",
                 confirmText = "Confirm",
-                onConfirm = { showAlert = false }){}
+                onConfirm = {viewModel2.handleAlert(false) }){}
         }
 
     }
